@@ -5,12 +5,13 @@
 
 #include <string>
 
-class AuthService : public HttpService {
- public:
-  AuthService();
+class AuthService : public HttpService
+{
+public:
+    AuthService();
 
-  virtual void post(HTTPRequest *request, HTTPResponse *response);
-  virtual void del(HTTPRequest *request, HTTPResponse *response);
+    virtual void post(HTTPRequest *request, HTTPResponse *response);
+    virtual void del(HTTPRequest *request, HTTPResponse *response);
 };
 
 #endif

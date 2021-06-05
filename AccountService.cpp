@@ -21,14 +21,57 @@
 using namespace std;
 using namespace rapidjson;
 
-AccountService::AccountService() : HttpService("/users") {
-  
+AccountService::AccountService() : HttpService("/users")
+{
 }
 
-void AccountService::get(HTTPRequest *request, HTTPResponse *response) {
+void AccountService::get(HTTPRequest *request, HTTPResponse *response)
+{
+    User *user = getAuthenticatedUser(request);
+    string urlUserId = request->getPathComponents().back();
 
+    if (user->user_id.compare(urlUserId))
+    {
+        //user_id in URL different from authenticated user_id
+        throw ClientError::forbidden();
+    }
+
+    //print json object
+    Document document;
+    Document::AllocatorType &a = document.GetAllocator();
+    Value obj;
+    obj.SetObject();
+    obj.AddMember("email", user->email, a);
+    obj.AddMember("balance", user->balance, a);
+    responseJsonFinalizer(response, &document, &obj);
 }
 
-void AccountService::put(HTTPRequest *request, HTTPResponse *response) {
+void AccountService::put(HTTPRequest *request, HTTPResponse *response)
+{
+    User *user = getAuthenticatedUser(request);
+    string urlUserId = request->getPathComponents().back();
 
+    if (user->user_id.compare(urlUserId))
+    {
+        //user_id in URL different from authenticated user_id
+        throw ClientError::forbidden();
+    }
+
+    try
+    {
+        user->email = request->formEncodedBody().get("email");
+    }
+    catch (const std::exception &e)
+    {
+        throw ClientError::badRequest();
+    }
+
+    //print json object
+    Document document;
+    Document::AllocatorType &a = document.GetAllocator();
+    Value obj;
+    obj.SetObject();
+    obj.AddMember("email", user->email, a);
+    obj.AddMember("balance", user->balance, a);
+    responseJsonFinalizer(response, &document, &obj);
 }

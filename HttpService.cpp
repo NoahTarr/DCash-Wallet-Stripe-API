@@ -7,42 +7,91 @@
 #include "ClientError.h"
 
 using namespace std;
+using namespace rapidjson;
 
-HttpService::HttpService(string pathPrefix) {
-  this->m_pathPrefix = pathPrefix;
+HttpService::HttpService(string pathPrefix)
+{
+    this->m_pathPrefix = pathPrefix;
 }
 
-User *HttpService::getAuthenticatedUser(HTTPRequest *request)  {
-  // TODO: implement this function
-  return NULL;
+void HttpService::responseJsonFinalizer(HTTPResponse *response, Document *document, Value *obj)
+{
+    // rapidjson boilerplate for converting the JSON object to a string
+    document->Swap(*obj);
+    StringBuffer buffer;
+    PrettyWriter<StringBuffer> writer(buffer);
+    document->Accept(writer);
+
+    // set the return object
+    response->setContentType("application/json");
+    response->setBody(buffer.GetString() + string("\n"));
 }
 
-string HttpService::pathPrefix() {
-  return m_pathPrefix;
+User *HttpService::getAuthenticatedUser(HTTPRequest *request)
+{
+    if (!request->hasAuthToken())
+        throw ClientError::badRequest();
+
+    User *user;
+    try
+    {
+        string aToken = request->getAuthToken();
+        user = m_db->auth_tokens.at(aToken);
+    }
+    catch (const exception &e)
+    {
+        throw ClientError::notFound();
+    }
+
+    return user;
 }
 
-void HttpService::head(HTTPRequest *request, HTTPResponse *response) {
-  cout << "HEAD " << request->getPath() << endl;
-  throw ClientError::methodNotAllowed();
+User *HttpService::getAuthenticatedUser(string authToken)
+{
+    User *user;
+    try
+    {
+        user = m_db->auth_tokens.at(authToken);
+    }
+    catch (const exception &e)
+    {
+        throw ClientError::notFound();
+    }
+
+    return user;
 }
 
-void HttpService::get(HTTPRequest *request, HTTPResponse *response) {
-  cout << "GET " << request->getPath() << endl;
-  throw ClientError::methodNotAllowed();
+string HttpService::pathPrefix()
+{
+    return m_pathPrefix;
 }
 
-void HttpService::put(HTTPRequest *request, HTTPResponse *response) {
-  cout << "PUT " << request->getPath() << endl;
-  throw ClientError::methodNotAllowed();
+void HttpService::head(HTTPRequest *request, HTTPResponse *response)
+{
+    cout << "HEAD " << request->getPath() << endl;
+    throw ClientError::methodNotAllowed();
 }
 
-void HttpService::post(HTTPRequest *request, HTTPResponse *response) {
-  cout << "POST " << request->getPath() << endl;
-  throw ClientError::methodNotAllowed();
+void HttpService::get(HTTPRequest *request, HTTPResponse *response)
+{
+    cout << "GET " << request->getPath() << endl;
+    throw ClientError::methodNotAllowed();
 }
 
-void HttpService::del(HTTPRequest *request, HTTPResponse *response) {
-  cout << "DELETE " << request->getPath() << endl;
-  throw ClientError::methodNotAllowed();
+void HttpService::put(HTTPRequest *request, HTTPResponse *response)
+{
+    cout << "PUT " << request->getPath() << endl;
+    throw ClientError::methodNotAllowed();
 }
 
+void HttpService::post(HTTPRequest *request, HTTPResponse *response)
+{
+    cout << "POST " << request->getPath() << endl;
+    throw ClientError::methodNotAllowed();
+}
+
+void HttpService::del(HTTPRequest *request, HTTPResponse *response)
+{
+    cout << "DELETE " << request->getPath() << endl;
+    throw ClientError::methodNotAllowed();
+}

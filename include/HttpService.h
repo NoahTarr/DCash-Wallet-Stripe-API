@@ -9,23 +9,31 @@
 #include "HTTPRequest.h"
 #include "HTTPResponse.h"
 
-class HttpService {
- public:
-  HttpService(std::string pathPrefix);
-  std::string pathPrefix();
-  
-  virtual void head(HTTPRequest *request, HTTPResponse *response);
-  virtual void get(HTTPRequest *request, HTTPResponse *response);
-  virtual void put(HTTPRequest *request, HTTPResponse *response);
-  virtual void post(HTTPRequest *request, HTTPResponse *response);
-  virtual void del(HTTPRequest *request, HTTPResponse *response);
+#include "rapidjson/document.h"
+#include "rapidjson/prettywriter.h"
+#include "rapidjson/istreamwrapper.h"
+#include "rapidjson/stringbuffer.h"
 
-  /**
+class HttpService
+{
+public:
+    HttpService(std::string pathPrefix);
+    std::string pathPrefix();
+
+    virtual void head(HTTPRequest *request, HTTPResponse *response);
+    virtual void get(HTTPRequest *request, HTTPResponse *response);
+    virtual void put(HTTPRequest *request, HTTPResponse *response);
+    virtual void post(HTTPRequest *request, HTTPResponse *response);
+    virtual void del(HTTPRequest *request, HTTPResponse *response);
+
+    void responseJsonFinalizer(HTTPResponse *response, rapidjson::Document *document, rapidjson::Value *obj);
+
+    /**
    * A reference to the single in-memory database for wallet data
    */
-  Database *m_db;
+    Database *m_db;
 
-  /**
+    /**
    * A helper function for looking up users on authenticated requests.
    *
    * Any API call handlers that require users to be authenticated
@@ -36,10 +44,11 @@ class HttpService {
    * @return the User object for the authenticated user
    * @throws ClientError for any cases where we can't lookup the user
    */
-  User *getAuthenticatedUser(HTTPRequest *request);
-  
- private:
-  std::string m_pathPrefix;
+    User *getAuthenticatedUser(HTTPRequest *request);
+    User *getAuthenticatedUser(std::string authToken);
+
+private:
+    std::string m_pathPrefix;
 };
 
 #endif
