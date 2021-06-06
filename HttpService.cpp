@@ -30,7 +30,7 @@ void HttpService::responseJsonFinalizer(HTTPResponse *response, Document *docume
 User *HttpService::getAuthenticatedUser(HTTPRequest *request)
 {
     if (!request->hasAuthToken())
-        throw ClientError::badRequest();
+        throw ClientError::forbidden();
 
     User *user;
     try

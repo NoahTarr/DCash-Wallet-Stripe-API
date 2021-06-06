@@ -41,8 +41,8 @@ void AccountService::get(HTTPRequest *request, HTTPResponse *response)
     Document::AllocatorType &a = document.GetAllocator();
     Value obj;
     obj.SetObject();
-    obj.AddMember("email", user->email, a);
     obj.AddMember("balance", user->balance, a);
+    obj.AddMember("email", user->email, a);
     responseJsonFinalizer(response, &document, &obj);
 }
 
@@ -71,7 +71,7 @@ void AccountService::put(HTTPRequest *request, HTTPResponse *response)
     Document::AllocatorType &a = document.GetAllocator();
     Value obj;
     obj.SetObject();
-    obj.AddMember("email", user->email, a);
     obj.AddMember("balance", user->balance, a);
+    obj.AddMember("email", user->email, a);
     responseJsonFinalizer(response, &document, &obj);
 }
