@@ -52,8 +52,8 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response)
         throw ClientError::notFound();
     }
 
-    if (amount > fromUser->balance)
-        throw ClientError::forbidden();
+    if (amount > fromUser->balance || amount < 0)
+        throw ClientError::badRequest();
 
     fromUser->balance -= amount;
     toUser->balance += amount;

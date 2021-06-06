@@ -63,8 +63,12 @@ void AccountService::put(HTTPRequest *request, HTTPResponse *response)
     }
     catch (const std::exception &e)
     {
+        //email parameter not passed
         throw ClientError::badRequest();
     }
+
+    if (user->email.empty())
+        throw ClientError::badRequest();
 
     //print json object
     Document document;

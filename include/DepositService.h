@@ -6,10 +6,14 @@
 
 #include <string>
 
-class DepositService : public HttpService {
- public:
-  DepositService();
-  virtual void post(HTTPRequest *request, HTTPResponse *response);
+class DepositService : public HttpService
+{
+public:
+    DepositService();
+    virtual void post(HTTPRequest *request, HTTPResponse *response);
+
+private:
+    std::string getStripeChargeId(int amount, std::string stripeToken);
 };
 
 #endif

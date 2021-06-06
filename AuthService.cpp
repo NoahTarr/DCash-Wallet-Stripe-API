@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include "AuthService.h"
 #include "StringUtils.h"
@@ -34,9 +33,6 @@ void AuthService::post(HTTPRequest *request, HTTPResponse *response)
     User *user;
     string authToken = StringUtils::createAuthToken();
 
-    if (any_of(username.begin(), username.end(), &::isupper))
-        throw ClientError::methodNotAllowed();
-
     try
     {
         username = request->formEncodedBody().get("username");
@@ -46,6 +42,11 @@ void AuthService::post(HTTPRequest *request, HTTPResponse *response)
     {
         throw ClientError::badRequest();
     }
+
+    //username must be lowercase
+    string criteria("abcdefghijklmnopqrstuvwxyz");
+    if (username.find_first_not_of(criteria) != string::npos || username.empty())
+        throw ClientError::badRequest();
 
     try //User Exists
     {
