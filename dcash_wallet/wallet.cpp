@@ -84,7 +84,6 @@ void connectToGunrock(bool includeAuthTokenHeader)
     catch (const std::exception &e)
     {
         outputError();
-        exit(1);
     }
 
     if (includeAuthTokenHeader)
@@ -146,7 +145,6 @@ void errorCheckThenExecute(std::string command)
         execBalance();
     else if (!splitCommand.front().compare("deposit") && splitCommand.size() == 6)
         execStripeDeposit(atof(splitCommand[1].c_str()), splitCommand[2], splitCommand[3], splitCommand[4], splitCommand[5]);
-    // execStripeDeposit(atof(splitCommand[1].c_str()), splitCommand[2], atoi(splitCommand[3].c_str()), atoi(splitCommand[4].c_str()), atoi(splitCommand[5].c_str()));
     else if (!splitCommand.front().compare("send") && splitCommand.size() == 3)
         execSend(splitCommand[1], atof(splitCommand[2].c_str()));
     else if (!splitCommand.front().compare("logout") && splitCommand.size() == 1)
@@ -181,13 +179,11 @@ bool execAuthPOST(string username, string password)
     }
     else
     {
+        //Remove prior off token if it's set
         if (!auth_token.empty())
-        {
-            //Account was logged into. Need to delete prior auth_token
-            //TODO: Delete previous auth_token
             execDeleteAuthToken();
-        }
 
+        //Load new auth token
         Document *d = response->jsonBody();
         auth_token = (*d)["auth_token"].GetString();
         user_id = (*d)["user_id"].GetString();
@@ -253,7 +249,7 @@ void execStripeDeposit(double amountDollars, string cardNum, string expYear, str
 
         HTTPClientResponse *stripeResponse = stripeClient.post("/v1/tokens", body.encode());
         if (!stripeResponse->success())
-            throw;
+            throw "error";
 
         //Convert HTTP body to rapidjson document
         Document *d = stripeResponse->jsonBody();
@@ -261,7 +257,7 @@ void execStripeDeposit(double amountDollars, string cardNum, string expYear, str
         tokenRecieved = true;
         delete d;
     }
-    catch (const std::exception &e)
+    catch (const char *msg)
     {
         outputError();
     }
@@ -316,7 +312,7 @@ void execLogout()
 
 void execDeleteAuthToken()
 {
-    //DEL /auth-tokens/{auth_token_id} - remove auth_token from database
+    //DEL /auth-tokens/auth_token - remove auth_token from database
     connectToGunrock(true);
     HTTPClientResponse *response = gunrockClient->del(string("/auth-tokens/") + auth_token);
 
